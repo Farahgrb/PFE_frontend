@@ -212,12 +212,12 @@ export default function Form() {
         {renderFormFields()}
 
         {isSubmitted && (
-          <Output>
-            <p>Transcription:</p>
-            <Transcription>{apiResponse?.Transcription}</Transcription>
-            <p>Label:</p>
-            <p>{apiResponse?.label}</p>
-          </Output>
+       <Output>
+       <p>Transcription:</p>
+       <Transcription>{apiResponse?.Transcription}</Transcription>
+       <p>Label:</p>
+       <p>{apiResponse?.label}</p>
+     </Output>
         )}
       </form>
     </Wrap>

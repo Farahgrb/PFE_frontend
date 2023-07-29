@@ -214,7 +214,7 @@ export default function EnhancedTable() {
       .then((response) => {
         // Assuming the fetched data is an array of objects
         const fetchedData = response.data;
-
+        console.log(response)
         // Transform the fetched data using the createData function and set it to the rows state
         const transformedData = fetchedData.map((item) =>
           createData(item.id, item.transcription, item.firstlabel, item.truelabel)
