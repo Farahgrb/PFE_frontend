@@ -18,7 +18,7 @@ export default function Form() {
   });
   const [draggedAudioFile, setDraggedAudioFile] = useState(null);
   const [files, setFiles] = useState([]);
-  const [bucketUris, setBucketUris] = useState([]);
+ 
   const [apiResponse, setApiResponse] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

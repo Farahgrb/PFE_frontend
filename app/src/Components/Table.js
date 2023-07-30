@@ -214,7 +214,7 @@ export default function EnhancedTable() {
       .then((response) => {
         // Assuming the fetched data is an array of objects
         const fetchedData = response.data;
-        console.log(response)
+        console.log(response);
         // Transform the fetched data using the createData function and set it to the rows state
         const transformedData = fetchedData.map((item) =>
           createData(item.id, item.transcription, item.firstlabel, item.truelabel)
@@ -235,17 +235,21 @@ export default function EnhancedTable() {
     setSelected([]);
   };
 
-  const handleClick = (event, id) => {
-    const selectedIndex = selected.indexOf(id);
+    const handleClick = (event, id) => {
+    const selectedIndex = selected.findIndex((row) => row.id === id);
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(id);
+      newSelected = newSelected.concat(
+        selected,
+        rows.find((row) => row.id === id)
+      );
+    } else {
+      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
     }
 
     setSelected(newSelected);
   };
-
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -260,41 +264,47 @@ export default function EnhancedTable() {
   };
 
   const handleDeleteClick = () => {
-    // Check if any rows are selected for deletion
     if (selected.length === 0) {
       return;
     }
 
-    // Prepare the list of item ids to delete
-    const idsToDelete = selected.map((selectedId) => rows[selectedId].id);
+    const idToDelete = selected[0].id;
+    const dataToDelete = { id: idToDelete };
 
-    // Make an API call to delete the rows with the ids
     axios
       .delete('http://127.0.0.1:9000/delete', {
-        data: { ids: idsToDelete },
+        data: dataToDelete,
       })
       .then((response) => {
-        // Assuming the backend responds with a success message
         console.log(response.data.message);
 
-        // After successful deletion on the backend, update the frontend state
-        setRows((prevRows) => prevRows.filter((row) => !idsToDelete.includes(row.id)));
+        // Update the rows state locally by removing the deleted row
+        setRows((prevRows) => prevRows.filter((row) => row.id !== idToDelete));
+
+        // Clear the selection
         setSelected([]);
+
+        // Determine the new page number after deletion
+        const deletedRowIndex = rows.findIndex((row) => row.id === idToDelete);
+        const newPage = Math.min(page, Math.ceil((rows.length - 1) / rowsPerPage));
+        setPage(newPage);
       })
       .catch((error) => {
-        console.error('Error deleting rows:', error);
+        console.error('Error deleting row:', error);
       });
   };
+
+  const visibleRows = React.useMemo(
+    () => stableSort(rows, getComparator(order, orderBy)).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [order, orderBy, page, rowsPerPage, rows]
+  );
+
 
   const isSelected = (id) => selected.indexOf(id) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  const visibleRows = React.useMemo(
-    () => stableSort(rows, getComparator(order, orderBy)).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage]
-  );
 
   return (
     <Box sx={{ width: '93%', marginLeft: '4%', marginTop: '1%' }}>
