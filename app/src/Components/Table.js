@@ -214,7 +214,7 @@ export default function EnhancedTable() {
       .then((response) => {
         // Assuming the fetched data is an array of objects
         const fetchedData = response.data;
-        console.log(response);
+        console.log(response)
         // Transform the fetched data using the createData function and set it to the rows state
         const transformedData = fetchedData.map((item) =>
           createData(item.id, item.transcription, item.firstlabel, item.truelabel)
@@ -235,21 +235,18 @@ export default function EnhancedTable() {
     setSelected([]);
   };
 
-    const handleClick = (event, id) => {
+  const handleClick = (event, id) => {
     const selectedIndex = selected.findIndex((row) => row.id === id);
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(
-        selected,
-        rows.find((row) => row.id === id)
-      );
-    } else {
-      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+      // Only select the clicked row
+      newSelected = [rows.find((row) => row.id === id)];
     }
 
     setSelected(newSelected);
   };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -300,7 +297,7 @@ export default function EnhancedTable() {
   );
 
 
-  const isSelected = (id) => selected.indexOf(id) !== -1;
+  const isSelected = (id) => selected.length > 0 && selected[0].id === id;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -308,58 +305,61 @@ export default function EnhancedTable() {
 
   return (
     <Box sx={{ width: '93%', marginLeft: '4%', marginTop: '1%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} onDeleteClick={handleDeleteClick} />
-        <TableContainer>
-          <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" size={dense ? 'small' : 'medium'}>
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              rowCount={rows.length}
-            />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                const isItemSelected = isSelected(row.id);
-                const labelId = `enhanced-table-checkbox-${index}`;
+    <Paper sx={{ width: '100%', mb: 2 }}>
+      <EnhancedTableToolbar numSelected={selected.length} onDeleteClick={handleDeleteClick} />
+      <TableContainer>
+        <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" size={dense ? 'small' : 'medium'}>
+          <EnhancedTableHead
+            numSelected={selected.length}
+            order={order}
+            orderBy={orderBy}
+            onSelectAllClick={handleSelectAllClick}
+            rowCount={rows.length}
+          />
+          <TableBody>
+            {visibleRows.map((row, index) => {
+              const isItemSelected = isSelected(row.id);
+              const labelId = `enhanced-table-checkbox-${index}`;
 
-                return (
-                  <TableRow
-                    hover
-                    onClick={(event) => handleClick(event, row.id)}
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell padding="checkbox" sx={{ visibility: 'hidden' }}></TableCell>
-                    <TableCell align="right">{row.Text}</TableCell>
-                    <TableCell align="right">{row.Predicted_label}</TableCell>
-                    <TableCell align="right">{row.True_Label}</TableCell>
-                  </TableRow>
-                );
-              })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
-                  <TableCell colSpan={6} />
+              return (
+                <TableRow
+                  hover
+                  onClick={(event) => handleClick(event, row.id)}
+                  aria-checked={isItemSelected}
+                  tabIndex={-1}
+                  key={row.id}
+                  selected={isItemSelected}
+                  sx={{
+                    cursor: 'pointer',
+                    backgroundColor: isItemSelected ? 'lightgrey' : 'inherit', // Change the background color when selected
+                  }}
+                >
+                  <TableCell padding="checkbox" sx={{ visibility: 'hidden' }}></TableCell>
+                  <TableCell align="right">{row.Text}</TableCell>
+                  <TableCell align="right">{row.Predicted_label}</TableCell>
+                  <TableCell align="right">{row.True_Label}</TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
-      <FormControlLabel control={<Switch checked={dense} onChange={handleChangeDense} />} label="Dense padding" />
-    </Box>
+              );
+            })}
+            {emptyRows > 0 && (
+              <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
+                <TableCell colSpan={6} />
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10]}
+        component="div"
+        count={rows.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+    </Paper>
+    <FormControlLabel control={<Switch checked={dense} onChange={handleChangeDense} />} label="Dense padding" />
+  </Box>
   );
 }

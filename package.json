@@ -2,6 +2,7 @@
   "dependencies": {
     "@material-ui/core": "^4.12.4",
     "@mui/icons-material": "^5.11.16",
+    "@mui/styles": "^5.14.1",
     "react-icons": "^4.10.1"
   }
 }
