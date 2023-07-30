@@ -23,6 +23,8 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import AdjustIcon from '@mui/icons-material/Adjust';
+import CheckIcon from '@mui/icons-material/Check'; // Add this import statement
+import CancelIcon from '@mui/icons-material/Cancel';
 
 function createData(id, Text, Predicted_label, True_Label) {
   return {
@@ -133,7 +135,31 @@ EnhancedTableHead.propTypes = {
 };
 
 function EnhancedTableToolbar(props) {
-  const { numSelected, onDeleteClick } = props;
+  const { numSelected, onDeleteClick, onUpdateClick } = props;
+  const [updateText, setUpdateText] = React.useState('');
+  const [isUpdateMode, setIsUpdateMode] = React.useState(false);
+
+
+  const handleUpdateTextChange = (event) => {
+    setUpdateText(event.target.value);
+  };
+
+  const handleUpdateButtonClick = () => {
+    setIsUpdateMode(true);
+  };
+
+  const handleCancelClick = () => {
+    setIsUpdateMode(false);
+    setUpdateText('');
+  };
+
+  const handleUpdateSubmit = () => {
+    // Call the onUpdateClick handler and pass the updateText to it
+    onUpdateClick(updateText);
+    // Clear the update text field after the update
+    setIsUpdateMode(false);
+    setUpdateText('');
+  };
 
   return (
     <Toolbar
@@ -170,23 +196,40 @@ function EnhancedTableToolbar(props) {
       )}
 
       {numSelected > 0 ? (
-        <>
-          <Tooltip title="Delete">
-            <IconButton onClick={onDeleteClick}>
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Update">
-            <IconButton>
-              <AdjustIcon />
-            </IconButton>
-          </Tooltip>
-        </>
+           <>
+           <Tooltip title="Delete">
+             <IconButton onClick={onDeleteClick}>
+               <DeleteIcon />
+             </IconButton>
+           </Tooltip>
+           <Tooltip title="Update">
+             {/* Toggle the text area and buttons based on isUpdateMode */}
+             {isUpdateMode ? (
+               <div>
+                 <textarea
+                   rows="2"
+                   cols="30"
+                   value={updateText}
+                   onChange={handleUpdateTextChange}
+                   placeholder="Enter new text"
+                 />
+                 <IconButton onClick={handleUpdateSubmit}>
+                   <CheckIcon />
+                 </IconButton>
+                 <IconButton onClick={handleCancelClick}>
+                   <CancelIcon />
+                 </IconButton>
+               </div>
+             ) : (
+               <IconButton onClick={handleUpdateButtonClick}>
+                 <AdjustIcon />
+               </IconButton>
+             )}
+           </Tooltip>
+         </>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterListIcon />
-          </IconButton>
+        <Tooltip title="list">
+         
         </Tooltip>
       )}
     </Toolbar>
@@ -234,6 +277,41 @@ export default function EnhancedTable() {
     }
     setSelected([]);
   };
+  const handleUpdateClick = (updateText) => {
+    if (selected.length === 0 || !updateText) {
+      return;
+    }
+
+    const idToUpdate = selected[0].id;
+    const dataToUpdate = {
+      id: idToUpdate,
+      truelabel: updateText,
+    };
+
+    axios
+      .patch('http://127.0.0.1:9000/update', JSON.stringify(dataToUpdate), {
+        headers: {
+          'Content-Type': 'application/json', // Set the correct Content-Type header
+        },
+      })
+      .then((response) => {
+        console.log(response.data.message);
+
+        // Update the rows state with the updated data
+        const updatedRows = rows.map((row) =>
+          row.id === idToUpdate ? { ...row, True_Label: updateText } : row
+        );
+        setRows(updatedRows);
+
+        // Clear the selection
+        setSelected([]);
+
+        // You may handle the response here if required
+      })
+      .catch((error) => {
+        console.error('Error updating data:', error);
+      });
+  }
 
   const handleClick = (event, id) => {
     const selectedIndex = selected.findIndex((row) => row.id === id);
@@ -306,7 +384,11 @@ export default function EnhancedTable() {
   return (
     <Box sx={{ width: '93%', marginLeft: '4%', marginTop: '1%' }}>
     <Paper sx={{ width: '100%', mb: 2 }}>
-      <EnhancedTableToolbar numSelected={selected.length} onDeleteClick={handleDeleteClick} />
+    <EnhancedTableToolbar
+          numSelected={selected.length}
+          onDeleteClick={handleDeleteClick}
+          onUpdateClick={handleUpdateClick}
+        />
       <TableContainer>
         <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" size={dense ? 'small' : 'medium'}>
           <EnhancedTableHead
