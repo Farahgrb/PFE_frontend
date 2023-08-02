@@ -253,7 +253,7 @@ export default function EnhancedTable() {
   React.useEffect(() => {
     // Fetch data when the component mounts
     axios
-      .get('http://127.0.0.1:9000/fetch')
+      .get('http://127.0.0.1:9000/classification/fetching')
       .then((response) => {
         // Assuming the fetched data is an array of objects
         const fetchedData = response.data;
@@ -289,7 +289,7 @@ export default function EnhancedTable() {
     };
 
     axios
-      .patch('http://127.0.0.1:9000/update', JSON.stringify(dataToUpdate), {
+      .patch('http://127.0.0.1:9000/classification/update', JSON.stringify(dataToUpdate), {
         headers: {
           'Content-Type': 'application/json', // Set the correct Content-Type header
         },
@@ -347,7 +347,7 @@ export default function EnhancedTable() {
     const dataToDelete = { id: idToDelete };
 
     axios
-      .delete('http://127.0.0.1:9000/delete', {
+      .delete('http://127.0.0.1:9000/classification/deletion', {
         data: dataToDelete,
       })
       .then((response) => {

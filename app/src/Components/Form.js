@@ -54,7 +54,7 @@ export default function Form() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('http://127.0.0.1:9000/classifytext', formData);
+      const response = await axios.post('http://127.0.0.1:9000/text/classification', formData);
       setApiResponse(response.data);
       setIsSubmitted(true);
     } catch (error) {
@@ -70,7 +70,7 @@ export default function Form() {
 
         const formDt = new FormData();
         formDt.append('file', formData.audioFile, 'audio.wav');
-        const response = await axios.post('http://127.0.0.1:9000/transcribe', formDt, config);
+        const response = await axios.post('http://127.0.0.1:9000/audio/hate/classification', formDt, config);
 
         setApiResponse(response.data);
         setIsSubmitted(true);
@@ -211,14 +211,53 @@ export default function Form() {
 
         {renderFormFields()}
 
-        {isSubmitted && (
+        {/* {isSubmitted && (
        <Output>
        <p>Transcription:</p>
        <Transcription>{apiResponse?.Transcription}</Transcription>
        <p>Label:</p>
        <p>{apiResponse?.label}</p>
      </Output>
-        )}
+        )} */}
+         {isSubmitted && apiResponse && apiResponse.Transcription && apiResponse.label && (
+   <div>
+   <Output>
+     {apiResponse.Transcription.map((text, index) => {
+       let label = apiResponse.label[index];
+       let textStyle = {};
+ 
+       if (label === 'Normal') {
+         textStyle.color = 'green';
+       } else if (label === 'Discrimination') {
+         textStyle.color = 'orange';
+       } else {
+         textStyle.color = 'red';
+       }
+ 
+       return (
+         <p key={index} style={textStyle}>
+           {text}
+         </p>
+       );
+     })}
+   </Output>
+ <Legend>
+ <div style={{ color: 'blue'}}><span>Legend:</span></div>
+   <div style={{ display: 'flex', alignItems: 'center' }}>
+     <div style={{ marginRight: '10px', backgroundColor: 'green', width: '20px', height: '20px' }}></div>
+     <span>Normal</span>
+   </div>
+   <div style={{ display: 'flex', alignItems: 'center' }}>
+     <div style={{ marginRight: '10px', backgroundColor: 'orange', width: '20px', height: '20px' }}></div>
+     <span>Discrimination</span>
+   </div>
+   <div style={{ display: 'flex', alignItems: 'center' }}>
+     <div style={{ marginRight: '10px', backgroundColor: 'red', width: '20px', height: '20px' }}></div>
+     <span>Abusive</span>
+   </div> </Legend>
+ </div>
+
+      )}
       </form>
     </Wrap>
   );
@@ -251,6 +290,11 @@ const Wrap = styled.div`
   justify-content: space-between;
   margin-left: 15%;
 `;
+const Labels = styled.div`
+ 
+
+`;
+
 
 const Label = styled.h4`
   padding-left: 2%;
@@ -288,12 +332,28 @@ const Output = styled.div`
   border-radius: 8px;
   background-color: #f9f9f9;
   margin-top: 20px;
-  margin-right:200px;
+  max-height: 260px; /* Set a maximum height to enable scrolling */
+  overflow: auto; /* Add a vertical scroll bar when content overflows */
+
   p {
     margin-bottom: 10px;
   }
 `;
+const Legend = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width:500px;
+  justify-content:space-between;
+  margin-Left: 350px;
+  margin-top: 10px;
+`;
 
+const ColorBox = styled.div`
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+`;
 const StyledTextField = styled(TextField)`
   width: 600px;
   height: 40px;

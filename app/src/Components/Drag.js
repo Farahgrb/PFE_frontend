@@ -31,14 +31,14 @@ export default function Drag({ pushFile }) {
       if (files.length > 0) {
         const selectedFile = files[0];
 
-        if (selectedFile.name.endsWith(".wav")) {
+        if( (selectedFile.name.endsWith(".wav"))||(selectedFile.name.endsWith(".mp3"))) {
           setFile(selectedFile);    
 
           setErrorMessage("");
           pushFile(selectedFile); // Call pushFile with the dropped file
           
         } else {
-          setErrorMessage("Please upload a WAV file.");
+          setErrorMessage("Please upload an audio file.");
         }
       }
     },
@@ -51,7 +51,7 @@ export default function Drag({ pushFile }) {
       <DropzoneContainer {...getRootProps()}>
         <input {...getInputProps()} />
         <AudioFileIcon />
-        <p>{isDragActive ? "Drop the file here" : "Drag and drop a WAV file here"}</p>
+        <p>{isDragActive ? "Drop the file here" : "Drag and drop an audio file here"}</p>
       </DropzoneContainer>
       {errorMessage && <p>{errorMessage}</p>}
       <p>{file ? `File name: ${file.name}` : "No files uploaded yet"}</p>
